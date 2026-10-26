@@ -93,7 +93,7 @@ The server speaks MCP over stdin/stdout. Point your client at the binary.
 
 ## Tools Reference
 
-dotscope exposes 13 MCP tools organized into four categories.
+dotscope exposes 13 MCP tools organized into five categories.
 
 ### Discovery & Resolution
 

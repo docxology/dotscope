@@ -15,15 +15,15 @@ This installs the `dotscope-mcp` binary, which runs a stdio-transport MCP server
 ```bash
 # 1. Ingest your codebase (one-time, ~10s for most repos)
 cd /path/to/your/project
-dotscope ingest .
+dotscope ingest
 
 # 2. Auto-configure your IDE
-dotscope mcp configure
+dotscope init
 
 # 3. Verify — ask your agent: "What scopes are available?"
 ```
 
-`dotscope mcp configure` detects Claude Desktop, Claude Code, and Cursor, and writes the MCP entry automatically. For other clients, see manual setup below.
+`dotscope init` detects Claude Desktop, Claude Code, and Cursor, and writes the MCP entry automatically. For other clients, see manual setup below.
 
 ## Manual Configuration
 
@@ -93,20 +93,15 @@ The server speaks MCP over stdin/stdout. Point your client at the binary.
 
 ## Tools Reference
 
-dotscope exposes 19 MCP tools organized into five categories.
+dotscope exposes 13 MCP tools organized into four categories.
 
-### Discovery
+### Discovery & Resolution
 
 | Tool | Use When |
 |------|----------|
-| `codebase_search` | You have a task and need relevant code. **Start here.** |
+| `dotscope_search` | You have a task and need relevant code. **Start here.** |
 | `match_scope` | You have a task description, need to find which scope covers it. |
 | `list_scopes` | You want to see all available scopes with descriptions. |
-
-### Resolution
-
-| Tool | Use When |
-|------|----------|
 | `resolve_scope` | You know the scope name and want files + context + constraints. |
 | `get_context` | You want architectural knowledge without loading files. |
 
@@ -115,36 +110,27 @@ dotscope exposes 19 MCP tools organized into five categories.
 | Tool | Use When |
 |------|----------|
 | `dotscope_check` | Before committing. Validates your diff against codebase rules. |
-| `dotscope_acknowledge` | A constraint is wrong for your case. Override it with a reason. |
-| `match_conventions_by_path` | Before creating a new file. See what patterns it should follow. |
-| `dotscope_route_file` | Before creating a new file. Ask where it should live. |
+| `dotscope_refresh` | A scope's data looks stale. Runs a synchronous scope or repo refresh. |
 
 ### Analysis
 
 | Tool | Use When |
 |------|----------|
-| `impact_analysis` | Before modifying a file. See the blast radius. |
 | `scope_health` | Checking for staleness, coverage gaps, import drift. |
 | `validate_scopes` | Checking for broken paths and missing context. |
-| `backtest_scopes_tool` | Measuring recall against git history. |
-| `scope_observations` | Reviewing accuracy trends for a scope. |
-| `scope_lessons` | Getting machine-generated patterns from observation data. |
-| `suggest_scope_changes` | Data-driven recommendations for scope includes. |
 
 ### Operations
 
 | Tool | Use When |
 |------|----------|
 | `ingest_codebase` | First-time setup or full re-scan from within the agent. |
-| `dotscope_debug` | A session went wrong. Diagnose why. |
-| `session_summary` | End of task. See what dotscope contributed. |
 
 ### Multi-Agent (Swarm)
 
 | Tool | Use When |
 |------|----------|
 | `dotscope_claim_scope` | Before writing code in a multi-agent setup. Claim exclusive access. |
-| `dotscope_renew_lock` | Your lock is about to expire. Extend it. |
+| `dotscope_renew_lock` | Your lock is about to expire. Extend it by 30 minutes. |
 | `dotscope_escalate` | Interlocking conflicts that can't be resolved programmatically. |
 
 ---
@@ -154,7 +140,7 @@ dotscope exposes 19 MCP tools organized into five categories.
 Most agent sessions follow this pattern:
 
 ```
-1. codebase_search("fix the auth token refresh bug", task_type="fix")
+1. dotscope_search("fix the auth token refresh bug", task_type="fix")
    → Returns files, constraints, routing, action hints
 
 2. [Agent writes code]
@@ -308,7 +294,7 @@ When multiple agents work on the same codebase simultaneously, use swarm locks t
 ```
 Agent A                          Agent B
    │                                │
-   ├─ codebase_search(...)          │
+   ├─ dotscope_search(...)          │
    ├─ dotscope_claim_scope(         │
    │    agent_id="agent-a",         │
    │    primary_files=[             │
@@ -317,7 +303,7 @@ Agent A                          Agent B
    │    ])                          │
    │  → status: "granted"          │
    │  → exclusive: [auth/*, ...]   │
-   │                                ├─ codebase_search(...)
+   │                                ├─ dotscope_search(...)
    │                                ├─ dotscope_claim_scope(
    │                                │    agent_id="agent-b",
    │                                │    primary_files=[
@@ -385,7 +371,7 @@ dotscope improves with use. Here is what happens automatically:
 
 4. **Self-correction:** Scope includes, rankings, and constraint confidence adjust based on accumulated data. No manual tuning required.
 
-You can inspect this loop with `scope_observations`, `scope_lessons`, and `suggest_scope_changes`.
+You can inspect this loop with `dotscope lessons <scope>` and `scope_health()`.
 
 ---
 
@@ -416,11 +402,11 @@ This writes to `.claude/settings.json` and provides defense-in-depth. The git pr
 
 dotscope can produce architecture documentation from its analysis:
 
-```bash
-dotscope generate
-```
+```python
+from dotscope.generate.engine import generate
 
-Or via MCP: `generate_artifacts()`
+generate(root=".")
+```
 
 This produces three markdown files in `docs/dotscope/`:
 
@@ -430,14 +416,15 @@ This produces three markdown files in `docs/dotscope/`:
 | `NETWORK_MAP.md` | Cross-scope dependency map with traffic patterns |
 | `CO_CHANGE_ATLAS.md` | Which files change together, how often, and why |
 
-These are useful for onboarding, code review, and architecture discussions. They update when you re-run `dotscope generate`.
+These are useful for onboarding, code review, and architecture discussions.
+They update when you re-run the generator.
 
 ---
 
 ## Troubleshooting
 
 **"No scopes found"**
-Run `dotscope ingest .` first. If you call `resolve_scope` on a specific module before ingesting, dotscope will lazy-ingest it on demand (2-3 seconds), but `list_scopes` requires an initial ingest.
+Run `dotscope ingest` first. If you call `resolve_scope` on a specific module before ingesting, dotscope will lazy-ingest it on demand (2-3 seconds), but `list_scopes` requires an initial ingest.
 
 **Agent does not see dotscope tools**
 Check that `dotscope-mcp` is on your PATH:
@@ -451,7 +438,7 @@ dotscope-mcp --root .
 ```
 
 **Stale scope data**
-Scopes update incrementally on every commit via the post-commit hook. For a full re-scan (transitive deps, convention re-discovery), run `dotscope ingest .` again.
+Scopes update incrementally on every commit via the post-commit hook. For a full re-scan (transitive deps, convention re-discovery), run `dotscope ingest` again.
 
 **Token budget too small**
 If `resolve_scope` returns a `context_exhaustion` error, the budget cannot fit a required file. Increase the budget or remove the assertion. The error tells you exactly which file and how many tokens it needs.

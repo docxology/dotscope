@@ -319,7 +319,7 @@ def _write_agent_instructions(root: str, quiet: bool = False):
         with open(target, "w", encoding="utf-8") as f:
             f.write("# dotscope Agent Instructions\n\n")
             f.write("Start every task with `codebase_search`. Run `dotscope_check` before every commit.\n\n")
-            f.write("See https://github.com/nxrobins/dotscope for full documentation.\n")
+            f.write("See https://github.com/docxology/dotscope for full documentation.\n")
 
     if not quiet:
         print("dotscope: AGENT_INSTRUCTIONS.md written", file=sys.stderr)

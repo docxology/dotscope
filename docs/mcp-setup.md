@@ -8,7 +8,7 @@ It is the **Invisible Supremum**.
 
 Whether deploying on **Cursor**, **Windsurf**, or **Claude Desktop**, integrating the Model Context Protocol requires merely aiming the AI interface natively to your local installation directory explicitly via standard standard CLI execution targets:
 
-`command: python -m dotscope`
+`command: dotscope-mcp --root /path/to/your/project`
 
 ### Zero-Configuration Networking
 You do not need to boot Docker. You do not install WASM runtimes, and you actively do not configure open proxy routing addresses natively. 

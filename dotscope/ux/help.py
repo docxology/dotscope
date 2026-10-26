@@ -7,7 +7,6 @@ this module handles display.
 HELP_ROOT = """\
 Usage: dotscope <command>
 
-  onboard                   [NEW!] Interactive getting started guide
   init                      One command: ingest, hooks, MCP config
   resolve <scope>           Serve context to an agent
   check                     Verify routing (guards block, nudges guide)
@@ -16,7 +15,7 @@ Usage: dotscope <command>
   health                    Scope staleness and drift
   refresh                   Runtime refresh queue and worker
 
-  ingest .                  Re-ingest (full scan)
+  ingest                    Re-ingest (full scan)
   intent                    Declare architectural direction
   diff --staged             Semantic diff
   hook install              Re-install hooks
@@ -27,19 +26,21 @@ Usage: dotscope <command>
 Run dotscope <command> --help for details."""
 
 HELP_INGEST = """\
-Usage: dotscope ingest <path> [options]
+Usage: dotscope ingest [options]
 
-  dotscope ingest .                    Full codebase ingest
-  dotscope ingest auth/                Single module
-  dotscope ingest . --max-commits 500  Deeper history mining
-  dotscope ingest . --quiet            Suppress progress (for CI)
+  dotscope ingest                      Full codebase ingest (current directory)
+  dotscope ingest --dir auth/          Single module
+  dotscope ingest --max-commits 500    Deeper history mining
+  dotscope ingest --quiet              Suppress progress (for CI)
 
 Options:
+  --dir <path>         Repository root to ingest (default: .)
   --max-commits <n>    Git commits to mine (default: 500)
   --no-history         Skip git history mining
   --no-docs            Skip doc absorption
   --quiet              Suppress progress output
-  --dry-run            Show what would be generated without writing"""
+  --dry-run            Show what would be generated without writing
+  --voice <mode>       Override voice mode (prescriptive, adaptive)"""
 
 HELP_RESOLVE = """\
 Usage: dotscope resolve <scope> [options]
@@ -69,12 +70,13 @@ Three severities:
   NOTE     Informational. Direction reversals, stability.
 
 Options:
-  --staged             Check staged changes (default)
   --diff <file>        Check arbitrary diff file
+  --session <id>       Session ID for boundary checking
   --backtest           Replay commits instead of checking staged
   --commits <n>        Commits to replay (with --backtest)
   --acknowledge <id>   Acknowledge a guard and proceed
-  --json               Machine-readable output"""
+  --json               Machine-readable output
+  --explain            Show full provenance for each finding"""
 
 HELP_INTENT = """\
 Usage: dotscope intent <action> [options]
@@ -97,12 +99,12 @@ Usage: dotscope conventions [options]
   dotscope conventions                List all conventions + compliance
   dotscope conventions --discover     Re-run discovery against codebase
   dotscope conventions --accept       Accept all discovered conventions
-  dotscope conventions --review       Interactive review
+  dotscope conventions --json         Machine-readable output
 
 Options:
   --discover           Re-run convention discovery
   --accept             Accept discovered conventions
-  --review             Review discovered conventions interactively"""
+  --json               Machine-readable output"""
 
 HELP_VOICE = """\
 Usage: dotscope voice [options]
@@ -153,18 +155,12 @@ Usage: dotscope debug [options]
 
 Options:
   --last               Debug most recent session with low recall
-  --list               List debuggable sessions
-  --json               Machine-readable output"""
+  --list               List debuggable sessions"""
 
 HELP_HEALTH = """\
-Usage: dotscope health [options]
+Usage: dotscope health
 
-  dotscope health                      All scopes
-  dotscope health auth                 Single scope
-  dotscope health --json               Machine-readable output
-
-Options:
-  --json               Machine-readable output"""
+  dotscope health                      Scope staleness, coverage and drift for the whole repo"""
 
 HELP_HOOK = """\
 Usage: dotscope hook <action>
@@ -203,7 +199,6 @@ HELP_COMMANDS = {
     "health": HELP_HEALTH,
     "hook": HELP_HOOK,
     "refresh": HELP_REFRESH,
-    "onboard": "Usage: dotscope onboard\n\nRun this command to get a friendly introduction to how dotscope works.",
 }
 
 

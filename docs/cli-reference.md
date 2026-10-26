@@ -12,7 +12,7 @@ dotscope init
 For manual setup or re-runs:
 
 ```bash
-dotscope ingest .               # Full re-ingest
+dotscope ingest                  # Full re-ingest
 dotscope hook install           # Re-install hooks
 ```
 

@@ -12,14 +12,14 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-sdist
           path: dist/
@@ -34,7 +34,7 @@ jobs:
           - os: windows-latest
             target: aarch64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -44,7 +44,7 @@ jobs:
           target: ${{ matrix.target }}
           
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-wheels-${{ matrix.os }}-${{ matrix.target }}
           path: dist/
@@ -62,13 +62,13 @@ jobs:
 
     steps:
       - name: Download sdist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-sdist
           path: dist/
           
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-wheels-*
           path: dist/
